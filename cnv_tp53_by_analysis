@@ -1,0 +1,34 @@
+select
+    a.id as "analysis_id",
+    a.orderhub_id,
+    a.assay,
+    a.match_type,
+    w.id as "workflow_id",
+    w.active_qc_status,
+    c.amp as "amplification",
+    c.chrom,
+    c.start,
+    c.end,
+    c.gene,
+    c.copy_number as "major_copy_number",
+    c.minor_copy_number,
+    c.meanT as "logR_tumor",
+    c.meanN as "logR_normal",
+    c.loh
+from analysis a
+-- if the samples are too old, use the following instead of 'workflow'
+-- __id_run should work for both old and new, but workflow is better
+-- join analysis_run ar on a.id = ar.analysis_id
+-- join __id_run w on ar.run_id = w.run_id
+-- join dna_cnv c on c.run_id = w.run_id
+join workflow w on w.analysis_id = a.id
+join dna_cnv c on c.run_id = w.id
+where c.gene = "TP53"
+  -- the c.amp comparisons are equivalent
+  -- and (c.amp = "gain" or c.amp = "loss")
+  and c.copy_number != 2 
+  and a.id in (
+      -- add analysis ids here
+      -- e.g., ("id1", "id2")
+  );
+  
